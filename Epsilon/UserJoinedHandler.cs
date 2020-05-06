@@ -15,27 +15,65 @@ namespace Epsilon
             base._client.UserJoined += OnEvent;
             _db = new DatabaseContext();
         }
-
         private Task OnEvent(SocketGuildUser user)
         {
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
-                var role = user.Guild.Roles.Where(has => has.Name.ToUpper() == "Neutral".ToUpper());
-                var newUser = new Visitor();
-
-                newUser.ServerJoinDate = user.JoinedAt;
-                newUser.CompletedMissions = 0;
-                newUser.PersonalStanding = 0;
-                newUser.OrganizationStanding = 0;
-                newUser.AllianceStanding = 0;
-                newUser.UserID = user.Username;
-                newUser.OrganizationName = "";
-                newUser.AllianceName = "";
-                newUser.Title = "Neutral";
-
-                _db.Visitors.Add(newUser);
-                _db.SaveChanges();
+                var newMember = new User();
+                var adminRole = user.Guild.GetRole(378974754884943882);
+                var channel = user.Guild.GetTextChannel(370226644574666755);
+                _db = new DatabaseContext();
+                var foundUser = SearchGuest(user);
+                await channel.SendMessageAsync(adminRole.Mention + $", {user.Username} has joined the server.");
+                if (foundUser != null && foundUser.DiscordId == user.Id)
+                {
+                    await channel.SendMessageAsync("I found a user:  " + user.Username + ".");
+                    foundUser.ServerJoinDate = user.JoinedAt;
+                    foundUser.Rank = "Guest";
+                    foundUser.UserID = user.ToString();
+                    foundUser.Username = user.Username;
+                    SaveGuest(foundUser, _db);
+                    await channel.SendMessageAsync("I have updated the user.");
+                }
+                else
+                {
+                    newMember.ServerJoinDate = user.JoinedAt;
+                    newMember.DiscordId = user.Id;
+                    newMember.UserID = user.ToString();
+                    newMember.Username = user.Username;
+                    newMember.Rank = "Guest";
+                    newMember.JoinedFaction = false;
+                    _db.Users.Add(newMember);
+                    _db.SaveChanges();
+                }
+                var role = user.Guild.Roles.Where(x => x.Name.ToUpper() == "Guest".ToUpper());
+                await user.AddRolesAsync(role);
             });
+        }
+        private void SaveGuest(User guest, DatabaseContext db)
+        {
+            try
+            {
+                db.Users.Update(guest);
+                db.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Guest Failed to retrieve. " + e.Message);
+            }
+        }
+        private User SearchGuest(SocketGuildUser user)
+        {
+            var db = new DatabaseContext();
+            try
+            {
+                return db.Users.Single(x => x.DiscordId == user.Id);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("User joined, but was unable to search guest. " + e.Message);
+                return null;
+            }
         }
     }
 }

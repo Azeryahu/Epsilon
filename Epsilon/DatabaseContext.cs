@@ -9,15 +9,14 @@ namespace Epsilon
 {
     public class DatabaseContext : DbContext
     {
-        public DbSet<Knight> Knights { get; set; }
-        public DbSet<Visitor> Visitors { get; set; }
-        public DbSet<Citizen> Citizens { get; set; }
-        public DbSet<Mission> Missions { get; set; }
-        public DbSet<Organization> Organizations { get; set; }
-        public DbSet<Alliance> Alliances { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Job> Jobs { get; set; }
+        public DbSet<Job.Group> Groups { get; set; }
+        public DbSet<Job.Group.Team> Teams { get; set; }
+        public DbSet<Industry> Indy { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=LEVIATHAN;Initial Catalog=RankDB;Integrated Security=True;Pooling=False");
+            optionsBuilder.UseSqlServer("Data Source=(localdb)\\ProjectsV13;Initial Catalog=EpsilonDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
         }
     }
 }

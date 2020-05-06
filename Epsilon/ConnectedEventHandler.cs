@@ -11,14 +11,15 @@ namespace Epsilon
     {
         public ConnectedEventHandler(DiscordSocketClient client) : base(client)
         {
-            base._client.Connected += _client_Connected;
+            base._client.Ready += _client_Ready;
         }
-
-        private Task _client_Connected()
+        private Task _client_Ready()
         {
             return Task.Run(() =>
             {
-                Console.WriteLine("Bot is connected.");
+                var announceChannel = _client.GetChannel(Epsilon.AnnounceChannelID) as ISocketMessageChannel;
+                announceChannel.SendMessageAsync("Epsilon has connected to the server!");
+                Console.WriteLine("Epsilon has connected to the server.");
             });
         }
     }
