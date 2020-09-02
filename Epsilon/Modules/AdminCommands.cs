@@ -13,14 +13,13 @@ namespace Epsilon.Modules
 {
     public class AdminCommands : InteractiveBase<SocketCommandContext>
     {
-        private List<string> GameNamesList = new List<string>();
         [Command("Update Database")]
         public async Task updatedatabase()
         {
             var user = Context.User as SocketGuildUser;
             var guild = Context.Guild as SocketGuild;
             var db = new DatabaseContext();
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id.Equals(Epsilon.MasterID) || user.Roles.Any(x => x.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase)))
             {
                 await ReplyAsync("Please wait while I process this request.");
                 int n = 0;
@@ -28,11 +27,12 @@ namespace Epsilon.Modules
                 while (n < guild.Users.Count)
                 {
                     var addedUser = userList[n];
-                    if (!addedUser.IsBot && db.Users.Any(x => x.DiscordId == addedUser.Id))
+                    if (!addedUser.IsBot && db.Users.Any(x => x.DiscordId.Equals(addedUser.Id)))
                     {
                         var existingUser = GetUser(addedUser);
-                        existingUser.UserID = addedUser.ToString();
-                        existingUser.Username = addedUser.Username;
+                        existingUser.ServerJoinDate = addedUser.JoinedAt;
+                        existingUser.DiscordUserID = addedUser.ToString();
+                        existingUser.DiscordUsername = addedUser.Username;
                         await CheckStanding(addedUser, existingUser);
                         SaveUser(existingUser);
                         n++;
@@ -42,8 +42,8 @@ namespace Epsilon.Modules
                         var newMember = new User();
                         newMember.ServerJoinDate = addedUser.JoinedAt;
                         newMember.DiscordId = addedUser.Id;
-                        newMember.UserID = addedUser.ToString();
-                        newMember.Username = addedUser.Username;
+                        newMember.DiscordUserID = addedUser.ToString();
+                        newMember.DiscordUsername = addedUser.Username;
                         await SetStandingRole(addedUser, "Neutral");
                         SaveUser(newMember);
                         n++;
@@ -72,9 +72,9 @@ namespace Epsilon.Modules
         {
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
-            if (user.Id == 151043323379843073 || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id.Equals(Epsilon.MasterID) || user.Roles.Any(x => x.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase)))
             {
-                StandingSheetUpdate.runUpdate();
+                GoogleSheetsUpdate.StandingSheetUpdate();
                 await ReplyAsync("I have updated the list.");
             }
             else
@@ -94,8 +94,8 @@ namespace Epsilon.Modules
         {
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
-            var channel = Context.Guild.GetTextChannel(468054006661644289);
-            if (user.Id == 151043323379843073 || user.Roles.Any(x => x.Name == "Administrator"))
+            var channel = Context.Guild.GetTextChannel(Epsilon.AnnounceChannelID);
+            if (user.Id.Equals(Epsilon.MasterID) || user.Roles.Any(x => x.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase)))
             {
                 try
                 {
@@ -109,23 +109,23 @@ namespace Epsilon.Modules
                     await CheckStanding(userId, targetUser);
                     if (targetUser.PersonalStanding >= 10)
                     {
-                        await channel.SendMessageAsync("Congragulations " + targetUser.Username + ", your standing with the " + Epsilon.OrganizationName + " has increased to " + Math.Round(targetUser.PersonalStanding, 2) + " by " + user.Username + ", and you are trustworthy here.");
+                        await channel.SendMessageAsync("Congragulations " + targetUser.DiscordUsername + ", your standing with the " + Epsilon.OrganizationName + " has increased to " + Math.Round(targetUser.PersonalStanding, 2) + " by " + user.Username + ", and you are trustworthy here.");
                     }
                     else if (targetUser.PersonalStanding >= 5 && targetUser.PersonalStanding < 10)
                     {
-                        await channel.SendMessageAsync("Congragulations " + targetUser.Username + ", your standing with the " + Epsilon.OrganizationName + " has increased and is now at " + Math.Round(targetUser.PersonalStanding, 2) + ". You have proven you can be friendly with others.");
+                        await channel.SendMessageAsync("Congragulations " + targetUser.DiscordUsername + ", your standing with the " + Epsilon.OrganizationName + " has increased and is now at " + Math.Round(targetUser.PersonalStanding, 2) + ". You have proven you can be friendly with others.");
                     }
                     else if (targetUser.PersonalStanding >= 0 && targetUser.PersonalStanding < 5)
                     {
-                        await channel.SendMessageAsync("Congragulations " + targetUser.Username + ", your standing with the " + Epsilon.OrganizationName + " has increased and is now at " + Math.Round(targetUser.PersonalStanding, 2) + ".  You are considered to be neutral.");
+                        await channel.SendMessageAsync("Congragulations " + targetUser.DiscordUsername + ", your standing with the " + Epsilon.OrganizationName + " has increased and is now at " + Math.Round(targetUser.PersonalStanding, 2) + ".  You are considered to be neutral.");
                     }
                     else if (targetUser.PersonalStanding < 0 && targetUser.PersonalStanding >= -5)
                     {
-                        await channel.SendMessageAsync("Congragulations " + targetUser.Username + ", your standing with the" + Epsilon.OrganizationName + " has increased to a " + Math.Round(targetUser.PersonalStanding, 2) + ", but we are keeping a close eye on you as you are a very suspicious character.");
+                        await channel.SendMessageAsync("Congragulations " + targetUser.DiscordUsername + ", your standing with the" + Epsilon.OrganizationName + " has increased to a " + Math.Round(targetUser.PersonalStanding, 2) + ", but we are keeping a close eye on you as you are a very suspicious character.");
                     }
                     else if (targetUser.PersonalStanding < -5 && targetUser.PersonalStanding >= -10)
                     {
-                        await channel.SendMessageAsync("Congragulations " + targetUser.Username + ", your standing with the " + Epsilon.OrganizationName + " has increased to a " + Math.Round(targetUser.PersonalStanding, 2) + ", but you are still considered abhorred by the Federation");
+                        await channel.SendMessageAsync("Congragulations " + targetUser.DiscordUsername + ", your standing with the " + Epsilon.OrganizationName + " has increased to a " + Math.Round(targetUser.PersonalStanding, 2) + ", but you are still considered abhorred by the Federation");
                     }
                     else if (targetUser.PersonalStanding < -10)
                     {
@@ -156,7 +156,7 @@ namespace Epsilon.Modules
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             var channel = Context.Guild.GetTextChannel(Epsilon.SecureChannelID);
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id == Epsilon.MasterID || user.Roles.Any(x => x.Name == "Administrator"))
             {
                 try
                 {
@@ -216,7 +216,7 @@ namespace Epsilon.Modules
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             var channel = Context.Guild.GetTextChannel(Epsilon.SecureChannelID);
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id.Equals(Epsilon.MasterID) || user.Roles.Any(x => x.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase)))
             {
                 try
                 {
@@ -232,7 +232,7 @@ namespace Epsilon.Modules
                     }
                     else
                     {
-                        await ReplyAsync("I am sorry, but you have not provided me with a valid standing to change " + targetUser.Username + "'s standing with.");
+                        await ReplyAsync("I am sorry, but you have not provided me with a valid standing to change " + targetUser.DiscordUsername + "'s standing with.");
                     }
                     await CheckStanding(userId, targetUser);
                     if (targetUser.PersonalStanding >= 10)
@@ -375,7 +375,7 @@ namespace Epsilon.Modules
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             var channel = Context.Guild.GetTextChannel(Epsilon.AnnounceChannelID);
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id == Epsilon.MasterID || user.Roles.Any(x => x.Name == "Administrator"))
             {
                 var updateUser = GetUser(userId);
                 updateUser.CanJoin = true;
@@ -399,7 +399,7 @@ namespace Epsilon.Modules
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             var channel = Context.Guild.GetTextChannel(Epsilon.SecureChannelID);
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id == Epsilon.MasterID || user.Roles.Any(x => x.Name == "Administrator"))
             {
                 await ReplyAsync("I have updated " + userId.Username +", and they are now a full fledged memeber of " + Epsilon.OrganizationName + ".");
             }
@@ -426,7 +426,7 @@ namespace Epsilon.Modules
                 updateUser.PersonalStanding = 0;
                 updateUser.FactionJoinDate = null;
                 updateUser.PromotionDate = null;
-                updateUser.PointBalance = 0;
+                updateUser.PromotionPointBalance = 0;
                 updateUser.DaysUntilPromotion = 0;
                 updateUser.CompletedMissions = 0;
                 updateUser.Grade = "E00";
@@ -469,7 +469,7 @@ namespace Epsilon.Modules
                 {
                     targetUser.DualUsername = dualUsername;
                     SaveUser(targetUser);
-                    await ReplyAsync("I have updated " + targetUser.Username + ".");
+                    await ReplyAsync("I have updated " + targetUser.DiscordUsername + ".");
                 }
                 else
                 {
@@ -617,35 +617,9 @@ namespace Epsilon.Modules
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             var targetUser = GetUser(socketGuildUser);
-            targetUser.PointBalance += pointAmmount;
+            targetUser.PromotionPointBalance += pointAmmount;
             SaveUser(targetUser);
             await ReplyAsync("I have added " + pointAmmount + " points to " + socketGuildUser.Username + ".");
-        }
-        [Command("Add Universe", RunMode = RunMode.Async)]
-        public async Task addUniverse([Remainder] string universeName)
-        {
-            var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-            await ReplyAsync("You are about to add " + universeName + " to the list of available games.  Is this correct?");
-            var response = await NextMessageAsync();
-            if (response != null && response.Content.Equals("Yes", StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    StreamWriter universeWriter = new StreamWriter("GameList.txt", append: true);
-                    universeWriter.WriteLine(universeName);
-                    universeWriter.Close();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Failed to write to file. " + e.Message);
-                }
-            }
-        }
-        [Command("List")]
-        public async Task list([Remainder] string roleName)
-        {
-
         }
 
 
@@ -746,30 +720,13 @@ namespace Epsilon.Modules
                 guest.PersonalStanding = ((-10 - guest.PersonalStanding) * 0.1F) + guest.PersonalStanding;
                 await CheckStanding(user, guest);
                 guest.NumberOfWarnings = 0;
-                await ReplyAsync(guest.Username + ", you have reached 3 warnings and I dropped your standing.  Your warnings are back to 0.  You " +
+                await ReplyAsync(guest.DiscordUsername + ", you have reached 3 warnings and I dropped your standing.  Your warnings are back to 0.  You " +
                     "now have a standing of:  " + Math.Round(guest.PersonalStanding, 2) + ".");
                 SaveUser(guest);
             }
             else if (guest.NumberOfWarnings < 3)
             {
                 SaveUser(guest);
-            }
-        }
-        private void GetGameList()
-        {
-            try
-            {
-                StreamReader gameNameReader = new StreamReader("GameList.txt");
-                while (!gameNameReader.EndOfStream)
-                {
-                    string gameName = gameNameReader.ReadLine();
-                    GameNamesList.Add(gameName);
-                    gameNameReader.Close();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Failed to get list of games. " + e.Message);
             }
         }
     }

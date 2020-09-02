@@ -258,13 +258,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bounty.cs" />
     <Compile Include="CommandHandler.cs" />
     <Compile Include="ConnectedEventHandler.cs" />
+    <Compile Include="Crew.cs" />
     <Compile Include="DatabaseContext.cs" />
     <Compile Include="Epsilon.cs" />
     <Compile Include="EventHandler.cs" />
     <Compile Include="Industry.cs" />
-    <Compile Include="IndustrySheetUpdate.cs" />
+    <Compile Include="GoogleSheetsUpdate.cs" />
     <Compile Include="KeyGenerator.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="Migrations\20191108021744_created.cs" />
@@ -276,12 +278,17 @@
       <DependentUpon>20191110140527_IndustryUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\DatabaseContextModelSnapshot.cs" />
+    <Compile Include="Mission.cs" />
+    <Compile Include="MissionXRef.cs" />
     <Compile Include="Modules\HelpCommands.cs" />
     <Compile Include="Modules\AdminCommands.cs" />
     <Compile Include="Modules\UserCommands.cs" />
+    <Compile Include="Op.cs" />
+    <Compile Include="OpsXRef.cs" />
+    <Compile Include="Organization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scraper.cs" />
     <Compile Include="User.cs" />
-    <Compile Include="StandingSheetUpdate.cs" />
     <Compile Include="UserJoinedHandler.cs" />
   </ItemGroup>
   <ItemGroup>

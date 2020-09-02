@@ -13,32 +13,8 @@ namespace Epsilon.Modules
 {
     public class UserCommands : InteractiveBase
     {
-        private List<string> GameNamesList = new List<string>();
         private List<string> JobTypeList = new List<string>();
         private List<string> JobClassList = new List<string>();
-        //Channel Permission Commands
-        [Command("Get Access")]
-        public async Task gainAccess([Remainder] string gameName)
-        {
-            var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-            if (gameName == null)
-            {
-                await ReplyAsync("You have not provided me with the name to which channels you would like to access.");
-            }
-            else
-            {
-                GetGameList();
-                if (GameNamesList.Any(x => x.Equals(gameName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    var gameRole = user.Guild.Roles.FirstOrDefault(x => x.Name.Equals(gameName, StringComparison.OrdinalIgnoreCase));
-                    await user.AddRoleAsync(gameRole);
-                    await ReplyAsync("I have given you access.");
-                }
-            }
-            ResetAttempts(user);
-            await SendLogMessage(user, "Get Access");
-        }
         //General User Commands
         [Command("Check Standing")]
         [Alias("Check Standings")]
@@ -103,7 +79,7 @@ namespace Epsilon.Modules
                 }
                 else if (lookUpUser.PersonalStanding < -10)
                 {
-                    await ReplyAsync("It appears something has gone terribly wrong with " + lookUpUser.Username + "'s standing.  Please see an " +
+                    await ReplyAsync("It appears something has gone terribly wrong with " + lookUpUser.DiscordUsername + "'s standing.  Please see an " +
                         "administrator to correct this issue.  Their current standing is:  " + Math.Round(lookUpUser.PersonalStanding, 2) + ".");
                 }
             }
@@ -143,7 +119,7 @@ namespace Epsilon.Modules
             else
             {
                 var lookup = GetUser(userId);
-                await ReplyAsync(lookup.Username + " has failed to type a proper command "
+                await ReplyAsync(lookup.DiscordUsername + " has failed to type a proper command "
                     + lookup.NumberOfAttempts + "times.  After 3 failed attmeps I will issue a warning.");
             }
             ResetAttempts(user);
@@ -208,7 +184,7 @@ namespace Epsilon.Modules
             }
         }
         //Faction Commands
-        /*[Command("Enlist", RunMode = RunMode.Async)]
+        [Command("Enlist", RunMode = RunMode.Async)]
         public async Task enlist()
         {
             var user = Context.User as SocketGuildUser;
@@ -242,12 +218,12 @@ namespace Epsilon.Modules
                     newRecruit.VerificationKey = newKey;
                     newRecruit.FactionJoinDate = DateTimeOffset.UtcNow;
                     newRecruit.PromotionDate = DateTimeOffset.UtcNow;
-                    newRecruit.PointBalance = 0;
+                    newRecruit.PromotionPointBalance = 0;
                     newRecruit.DaysUntilPromotion = 30;
                     newRecruit.PersonalStanding = 10;
                     newRecruit.DiscordId = user.Id;
-                    newRecruit.UserID = user.ToString();
-                    newRecruit.Username = user.Username;
+                    newRecruit.DiscordUserID = user.ToString();
+                    newRecruit.DiscordUsername = user.Username;
                     newRecruit.Branch = "Military";
                     newRecruit.Rank = "Recruit";
                     newRecruit.Grade = "E00";
@@ -257,21 +233,21 @@ namespace Epsilon.Modules
                 }
                 else
                 {
-                    await ReplyAsync("You have already joined and there is nothing more I can do at this time for you. :face_palm:");
+                    await ReplyAsync("You have already joined the military and there is nothing more I can do at this time for you. :face_palm:");
                 }
             }
             else if (response != null && response.Content.Equals("no", StringComparison.OrdinalIgnoreCase))
             {
                 await ReplyAsync("Okay, I will not enlist you into the military for " + Epsilon.OrganizationName + ".  Perhaps you wish to join their civilian secor " +
-                    "instead?  If you wish to do this you simply need to 'join' instead of 'enlist'.");
+                    "instead?  If you wish to do this you can use the command \"~join\" instead of \"enlist\".");
             }
             else
             {
-                await ReplyAsync("Your response is invalid.  Please try again later when you have aquired enough brain cells to try again.");
+                await ReplyAsync("Your response is invalid.  Please try again later when you have aquired enough brain cells to use this command correctly.");
             }
             ResetAttempts(user);
             await SendLogMessage(user, "Enlist");
-        }*/
+        }
         [Command("Join", RunMode = RunMode.Async)]
         public async Task join()
         {
@@ -306,11 +282,11 @@ namespace Epsilon.Modules
                         newCitizen.VerificationKey = newKey;
                         newCitizen.FactionJoinDate = DateTimeOffset.UtcNow;
                         newCitizen.PromotionDate = DateTimeOffset.UtcNow;
-                        newCitizen.PointBalance = 0;
+                        newCitizen.PromotionPointBalance = 0;
                         newCitizen.DaysUntilPromotion = 30;
                         newCitizen.PersonalStanding = 10;
-                        newCitizen.UserID = user.ToString();
-                        newCitizen.Username = user.Username;
+                        newCitizen.DiscordUserID = user.ToString();
+                        newCitizen.DiscordUsername = user.Username;
                         newCitizen.Branch = "Civilian";
                         newCitizen.Rank = "Trainee";
                         newCitizen.Grade = "C00";
@@ -340,29 +316,22 @@ namespace Epsilon.Modules
             if (user == null) return;
             var askingUser = GetUser(user);
             var existingIndustry = CheckIndustry(partName);
-            if (/*askingUser.JoinedFaction == true && */askingUser.NDAVerified == true)
+            if (existingIndustry == null)
             {
-                if (existingIndustry == null)
-                {
-                    var newIndustryRequest = new Industry();
-                    newIndustryRequest.Username = user.Username;
-                    newIndustryRequest.Quantity = qty;
-                    newIndustryRequest.PartName = partName;
-                    updateIndustry(newIndustryRequest);
-                    await ReplyAsync("I have queued " + qty + " amount of " + partName + ".");
-                }
-                else
-                {
-                    existingIndustry.Quantity += qty;
-                    updateIndustry(existingIndustry);
-                    await ReplyAsync("I have queued " + qty + " amount of " + partName + ".");
-                }
-                IndustrySheetUpdate.runUpdate();
+                var newIndustryRequest = new Industry();
+                newIndustryRequest.Username = user.Username;
+                newIndustryRequest.Quantity = qty;
+                newIndustryRequest.PartName = partName;
+                updateIndustry(newIndustryRequest);
+                await ReplyAsync("I have queued " + qty + " amount of " + partName + ".");
             }
             else
             {
-                await ReplyAsync("This feature is unavailable to you at this time.");
+                existingIndustry.Quantity += qty;
+                updateIndustry(existingIndustry);
+                await ReplyAsync("I have queued " + qty + " amount of " + partName + ".");
             }
+            GoogleSheetsUpdate.IndustrySheetUpdate();
             await SendLogMessage(user, "DU Queue Part");
             ResetAttempts(user);
         }
@@ -373,18 +342,15 @@ namespace Epsilon.Modules
             if (user == null) return;
             var askingUser = GetUser(user);
             var existingIndustry = CheckIndustry(partName);
-            if (askingUser.NDAVerified == true)
+            if (existingIndustry != null)
             {
-                if (existingIndustry != null)
-                {
-                    existingIndustry.Quantity -= qty;
-                    updateIndustry(existingIndustry);
-                    await ReplyAsync("I have updated the queue of " + partName + " to a quantity of " + existingIndustry.Quantity + ".");
-                }
-                else
-                {
+                existingIndustry.Quantity -= qty;
+                updateIndustry(existingIndustry);
+                await ReplyAsync("I have updated the queue of " + partName + " to a quantity of " + existingIndustry.Quantity + ".");
+            }
+            else
+            {
 
-                }
             }
         }
         //Jobs
@@ -545,23 +511,6 @@ namespace Epsilon.Modules
                     await user.AddRoleAsync(newRole);
                 }
                 SaveUser(targetUser);
-            }
-        }
-        private void GetGameList()
-        {
-            try
-            {
-                StreamReader gameNameReader = new StreamReader("GameList.txt");
-                while (!gameNameReader.EndOfStream)
-                {
-                    string gameName = gameNameReader.ReadLine();
-                    GameNamesList.Add(gameName);
-                }
-                gameNameReader.Close();
-            }
-            catch (Exception e)
-            {
-                Context.Channel.SendMessageAsync("Failed to get Game Name List.  " + e.Message);
             }
         }
         private void GetJobTypeList()

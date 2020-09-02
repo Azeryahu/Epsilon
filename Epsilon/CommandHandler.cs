@@ -15,9 +15,7 @@ namespace Epsilon
 {
     public class CommandHandler
     {
-        string reader = string.Empty;
-        double c = 75.409748628491;
-        double k = 0.334918564750126;
+        private static readonly string reader = string.Empty;
         private DiscordSocketClient _client;
         private CommandService _adminService;
         private CommandService _responsesService;
@@ -25,19 +23,11 @@ namespace Epsilon
         private IServiceProvider _services;
         private InteractiveService _interactiveService;
         private List<ulong> InConvo = new List<ulong>();
+        private SocketCommandContext Context = null;
+        double c = 75.409748628491;
+        double k = 0.334918564750126;
         public CommandHandler(DiscordSocketClient client)
         {
-            try
-            {
-                StreamReader channelReader = new StreamReader("ChannelList.txt");
-                //Epsilon.AnnounceChannelID = ulong.Parse(channelReader.ReadLine());
-                //Epsilon.BotSpamChannelID = ulong.Parse(channelReader.ReadLine());
-                //Epsilon.BotSpamChannelID = ulong.Parse(channelReader.ReadLine());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Unable to get file.  " + e.Message);
-            }
             _client = client;
             _services = new ServiceCollection()
                 .AddSingleton(_client)
@@ -59,16 +49,43 @@ namespace Epsilon
             var msg = s as SocketUserMessage;
             var db = new DatabaseContext();
             if (msg == null) return;
-            var context = new SocketCommandContext(_client, msg);
-            int argPos = 0;
-            CommandService _service = null;
+            Context = new SocketCommandContext(_client, msg);
             string errText = string.Empty;
-            var user = context.User as SocketGuildUser;
+            var user = Context.User as SocketGuildUser;
+            if (user != null)
+            {
+                var msgUser = GetUser(user, db);
+                if (msgUser == null && ((user.Roles.Any(x => x.Id.Equals(Epsilon.SeniorOfficerID))) || user.Id.Equals(Epsilon.MasterID)))
+                {
+                    var newUser = new User();
+                    newUser.ServerJoinDate = user.JoinedAt;
+                    newUser.DiscordId = user.Id;
+                    newUser.DiscordUserID = user.ToString(); ;
+                    newUser.DiscordUsername = user.Username;
+                    db.Users.Add(newUser);
+                    db.SaveChanges();
+                    msgUser = GetUser(user, db);
+                    await Context.Guild.GetTextChannel(Epsilon.BotSpamChannelID).SendMessageAsync("The database was empty.  Populating now with the current members of " +
+                        "the server.");
+                }
+                msgUser.LastMessageRecieved = DateTimeOffset.UtcNow;
+                SaveUser(msgUser, db);
+            }
+            while (DateTimeOffset.UtcNow.Subtract(Epsilon.LastCheck).Days > 2)
+            {
+                Epsilon.LastCheck = Epsilon.LastCheck.AddDays(2);
+            }
+            if (DateTimeOffset.UtcNow.Subtract(Epsilon.LastCheck).Days >= 2)
+            {
+                CheckHiatus(db);
+            }
+            CommandService _service = null;
+            int argPos = 0;
             var targetGuest = GetUser(user, db);
             targetGuest.NumberOfAttempts++;
             if (msg.HasCharPrefix('~', ref argPos))
             {
-                if (msg.Channel.Id == Epsilon.BotSpamChannelID || msg.Channel.Id == Epsilon.SecureChannelID)
+                if (msg.Channel.Id.Equals(Epsilon.BotSpamChannelID) || msg.Channel.Id.Equals(Epsilon.SecureChannelID))
                 {
                     _service = _responsesService;
                     errText = "Something has gone terribly wrong with user commands.  ";
@@ -76,7 +93,7 @@ namespace Epsilon
                 else
                 {
                     await msg.DeleteAsync();
-                    await context.Guild.GetTextChannel(Epsilon.BotSpamChannelID).SendMessageAsync(msg.Author.Mention + ", please use commands in this channel.  " +
+                    await Context.Guild.GetTextChannel(Epsilon.BotSpamChannelID).SendMessageAsync(msg.Author.Mention + ", please use commands in this channel.  " +
                         "This attempt makes " + targetGuest.NumberOfAttempts + " attempts.  As a reminder, three attempts will result in a warning.");
                     if (targetGuest.NumberOfAttempts == 1)
                     {
@@ -92,7 +109,7 @@ namespace Epsilon
                         targetGuest.NumberOfWarnings++;
                         await CheckWarnings(user, targetGuest, msg, db);
                         SaveUser(targetGuest, db);
-                        await context.Guild.GetTextChannel(Epsilon.BotSpamChannelID).SendMessageAsync(msg.Author.Mention + ", you have failed three times to send " +
+                        await Context.Guild.GetTextChannel(Epsilon.BotSpamChannelID).SendMessageAsync(msg.Author.Mention + ", you have failed three times to send " +
                             "a command in the correct channel.  You now have " + targetGuest.NumberOfWarnings + " number of warnings against you.  " +
                             "If you reach three warnings, your standing with " + Epsilon.OrganizationName + " will drop.");
                     }
@@ -110,31 +127,31 @@ namespace Epsilon
             }
             if (_service != null)
             {
-                var result = await _service.ExecuteAsync(context, argPos, _services);
+                var result = await _service.ExecuteAsync(Context, argPos, _services);
                 if (result.ErrorReason == "User not found.")
                 {
-                    await context.Channel.SendMessageAsync("I'm sorry, but the person does not belong to this server.  " +
+                    await Context.Channel.SendMessageAsync("I'm sorry, but the person does not belong to this server.  " +
                         "I can only give you information on those who are in this server.");
                 }
                 else if (!result.IsSuccess && result.Error == CommandError.UnknownCommand)
                 {
                     if (targetGuest.NumberOfAttempts == 1)
                     {
-                        await context.Channel.SendMessageAsync("Nope.  The command you tried to enter was not correct.  I would suggest you try the command" +
+                        await Context.Channel.SendMessageAsync("Nope.  The command you tried to enter was not correct.  I would suggest you try the command" +
                             " '?Help' for a list of available help commands, or you could try the command '?Command Help (command)' for help on a specific command.  Good try though." +
                             "\n" + result.ErrorReason);
                         SaveUser(targetGuest, db);
                     }
                     else if (targetGuest.NumberOfAttempts == 2)
                     {
-                        await context.Channel.SendMessageAsync("I have given you options where you can find the correct information.  If you are not capable of " +
+                        await Context.Channel.SendMessageAsync("I have given you options where you can find the correct information.  If you are not capable of " +
                             "typing a correct command, I will have to issue a warning.  The number of consecutive incorrect attempts is now at " + targetGuest.NumberOfAttempts +
                             ".  Once you reach three attempts, a warning will be issued.");
                         SaveUser(targetGuest, db);
                     }
                     else if (targetGuest.NumberOfAttempts >=3)
                     {
-                        await context.Channel.SendMessageAsync("You have left me no other choice.  Since you refuse to seek help, I am issuing you a warning.");
+                        await Context.Channel.SendMessageAsync("You have left me no other choice.  Since you refuse to seek help, I am issuing you a warning.");
                         targetGuest.NumberOfAttempts = 0;
                         targetGuest.NumberOfWarnings++;
                         await CheckWarnings(user, targetGuest, msg, db);
@@ -189,10 +206,10 @@ namespace Epsilon
             var msg = messageRecieved as SocketUserMessage;
             if (msg == null) return;
             var db = new DatabaseContext();
-            var context = new SocketCommandContext(_client, msg);
-            var user = context.User as SocketGuildUser;
+            var Context = new SocketCommandContext(_client, msg);
+            var user = Context.User as SocketGuildUser;
             var targetGuest = GetUser(user, db);
-            if (db.Users.Any(x => x.UserID == targetGuest.UserID))
+            if (db.Users.Any(x => x.DiscordUserID == targetGuest.DiscordUserID))
             {
                 targetGuest.PersonalStanding = ((10 - targetGuest.PersonalStanding) * 0.00012207F) + targetGuest.PersonalStanding;
                 await CheckStanding(user, targetGuest);
@@ -226,13 +243,13 @@ namespace Epsilon
         {
             var msg = s as SocketUserMessage;
             if (msg == null) return;
-            var context = new SocketCommandContext(_client, msg);
+            var Context = new SocketCommandContext(_client, msg);
             if (guest.NumberOfWarnings == 3)
             {
                 guest.PersonalStanding = ((-10 - guest.PersonalStanding) * 0.1F) + guest.PersonalStanding;
                 await CheckStanding(user, guest);
                 SaveUser(guest, db);
-                await context.Channel.SendMessageAsync(user.Username + ", you have reached 3 warnings and I will have to drop your standing.  You now have a standing of " + guest.PersonalStanding + ".");
+                await Context.Channel.SendMessageAsync(user.Username + ", you have reached 3 warnings and I will have to drop your standing.  You now have a standing of " + guest.PersonalStanding + ".");
             }
             else if (guest.NumberOfWarnings > 3)
             {
@@ -245,13 +262,13 @@ namespace Epsilon
             var msg = messageRecieved as SocketUserMessage;
             if (msg == null || msg.Author.IsBot) return Task.CompletedTask;
             if (InConvo.Contains(msg.Author.Id)) return Task.CompletedTask;
-            var context = new SocketCommandContext(_client, msg);
-            var user = context.User as SocketGuildUser;
+            var Context = new SocketCommandContext(_client, msg);
+            var user = Context.User as SocketGuildUser;
             var db = new DatabaseContext();
             var targetUser = GetUser(user, db);
-            var announceChannel = context.Guild.GetTextChannel(Epsilon.AnnounceChannelID);
-            var secureChannel = context.Guild.GetTextChannel(Epsilon.SecureChannelID);
-            var botChannel = context.Guild.GetTextChannel(Epsilon.BotSpamChannelID);
+            var announceChannel = Context.Guild.GetTextChannel(Epsilon.AnnounceChannelID);
+            var secureChannel = Context.Guild.GetTextChannel(Epsilon.SecureChannelID);
+            var botChannel = Context.Guild.GetTextChannel(Epsilon.BotSpamChannelID);
             if (targetUser.JoinedFaction == true)
             {
                 var daysInFaction = DateTimeOffset.Now.Subtract(targetUser.FactionJoinDate.Value).Days;
@@ -279,7 +296,7 @@ namespace Epsilon
                                       "and therefore are not permitted to be in charge of groups.  Instead, non-managers will report to the managers whom " +
                                       "they are placed under. \n" +
                                       "Which path do you choose?  You have " + Epsilon.TimeoutTimeLimit + " seconds to reply, or this will time out.");
-                                var response = await _interactiveService.NextMessageAsync(context);
+                                var response = await _interactiveService.NextMessageAsync(Context);
                                 if (response != null && response.Content.Equals("management", StringComparison.OrdinalIgnoreCase))
                                 {
                                     await botChannel.SendMessageAsync("You have chosen the management side.  Congratulations!");
@@ -351,7 +368,7 @@ namespace Epsilon
                                     if (done)
                                     {
                                         await SetRank(user, targetUser.Grade, db);
-                                        await announceChannel.SendMessageAsync("@everyone, let us congragulate " + targetUser.Username +
+                                        await announceChannel.SendMessageAsync("@everyone, let us congragulate " + targetUser.DiscordUsername +
                                             " on their promotion!  They have been a member for " + daysInFaction + " days, and have earned a promotion!  " +
                                             user.Mention + " You have been promoted to " + targetUser.Grade + " " + targetUser.Rank + ".");
                                     }
@@ -408,7 +425,7 @@ namespace Epsilon
                                     }
                                     targetUser.PromotionDate = DateTimeOffset.UtcNow;
                                     await SetRank(user, targetUser.Grade, db);
-                                    await announceChannel.SendMessageAsync("@everyone, let us congragulate " + targetUser.Username +
+                                    await announceChannel.SendMessageAsync("@everyone, let us congragulate " + targetUser.DiscordUsername +
                                         " on their promotion!  They have been a member for " + daysInFaction + " days, and have earned a promotion!  " +
                                         user.Mention + " You have been promoted to " + targetUser.Grade + " " + targetUser.Rank + ".");
                                 }
@@ -452,6 +469,23 @@ namespace Epsilon
                     await user.AddRoleAsync(newRole);
                 }
                 SaveUser(targetUser, db);
+            }
+        }
+        private void CheckHiatus(DatabaseContext db)
+        {
+            var hiatusList = db.Users.ToList();
+            foreach (var member in hiatusList)
+            {
+                var days = DateTimeOffset.UtcNow.Subtract(member.LastMessageRecieved.Value).Days;
+                if (days >= 30)
+                {
+                    var users = Context.Guild.Users.ToList();
+                    var user = users.FirstOrDefault(x => x.Id.Equals(member.DiscordId));
+                    var currentRole = user.Roles.FirstOrDefault(x => x.Id.Equals(Epsilon.DUActiveID));
+                    var hiatusRole = user.Guild.Roles.FirstOrDefault(x => x.Id.Equals(Epsilon.HiatusID));
+                    user.RemoveRoleAsync(currentRole);
+                    user.AddRoleAsync(hiatusRole);
+                }
             }
         }
     }

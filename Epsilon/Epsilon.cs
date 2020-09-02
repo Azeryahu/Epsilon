@@ -13,14 +13,24 @@ namespace Epsilon
     {
         private static DiscordSocketClient _client;
         private static CommandHandler _handler;
-        public static int TimeoutTimeLimit = 180;
-        public static ulong BotSpamChannelID = 468054497244217344;
-        public static ulong AnnounceChannelID = 648990637596737536;
-        public static ulong SecureChannelID = 648990541161299989;
-        public static ulong LogChannelID = 648990953402794012;
-        public static ulong LambertID = 151043323379843073;
-        public static ulong AdminID = 622595673665044481;
+        public static ulong BotSpamChannelID = 0;
+        public static ulong AnnounceChannelID = 0;
+        public static ulong SecureChannelID = 0;
+        public static ulong LogChannelID = 0;
+        public static ulong MasterID = 0;
+        public static ulong SeniorOfficerID = 0;
+        public static ulong OfficerID = 0;
+        public static ulong CaptainID = 0;
+        public static ulong AdminID = 0;
+        public static ulong ModID = 0;
+        public static ulong StaffID = 0;
+        public static ulong DUActiveID = 0;
+        public static ulong HiatusID = 0;
+        public static ulong MemberID = 0;
+        public static ulong BotID = 0;
         public static string OrganizationName = "Raiders of the Lost Sector";
+        public static string DBString = string.Empty;
+        public static int TimeoutTimeLimit = 180;
         public static Dictionary<string, string> RanksDictionary = new Dictionary<string, string> { {"C00", "Trainee" },{"C01", "Student" },{"C02", "Beginner" },
             {"C03", "Apprentice" },{"C04", "Assistant" },{"C05", "Practitioner" },{"C06", "Associate" },{"C07", "Journyman" },{"C08", "Trainer" },
             {"C09", "Expert" },{"C10", "Mentor" },{"C11", "Master" },{"C12", "Elite" },{"M01", "Team Leader" },{"M02", "Group Leader" },
@@ -33,6 +43,8 @@ namespace Epsilon
             {"O09", "Lieutenant General" },{"O10", "General" },{"O11", "Commander" },{"O12", "Admiral" }
         };
         public static List<string> StandingRolesList = new List<string> { "trusted", "friendly", "neutral", "suspicious", "criminal" };
+        public static DateTimeOffset LastCheck = DateTimeOffset.UtcNow;
+        public static TimeSpan WaitTime = TimeSpan.FromSeconds(150);
         static void Main(string[] args)
         {
             new Epsilon().MainAsync().GetAwaiter().GetResult();
@@ -51,6 +63,28 @@ namespace Epsilon
             {
                 StreamReader TokenReader = new StreamReader("EpsilonBotToken.txt");
                 token = TokenReader.ReadLine();
+                TokenReader.Close();
+                StreamReader IDReader = new StreamReader("ID List.txt");
+                ulong.TryParse(IDReader.ReadLine(), out BotSpamChannelID);
+                ulong.TryParse(IDReader.ReadLine(), out BotSpamChannelID);
+                ulong.TryParse(IDReader.ReadLine(), out AnnounceChannelID);
+                ulong.TryParse(IDReader.ReadLine(), out SecureChannelID);
+                ulong.TryParse(IDReader.ReadLine(), out LogChannelID);
+                ulong.TryParse(IDReader.ReadLine(), out MasterID);
+                ulong.TryParse(IDReader.ReadLine(), out SeniorOfficerID);
+                ulong.TryParse(IDReader.ReadLine(), out OfficerID);
+                ulong.TryParse(IDReader.ReadLine(), out CaptainID);
+                ulong.TryParse(IDReader.ReadLine(), out AdminID);
+                ulong.TryParse(IDReader.ReadLine(), out ModID);
+                ulong.TryParse(IDReader.ReadLine(), out StaffID);
+                ulong.TryParse(IDReader.ReadLine(), out DUActiveID);
+                ulong.TryParse(IDReader.ReadLine(), out HiatusID);
+                ulong.TryParse(IDReader.ReadLine(), out MemberID);
+                ulong.TryParse(IDReader.ReadLine(), out BotID);
+                IDReader.Close();
+                StreamReader DBReader = new StreamReader("DB.txt");
+                DBString = DBReader.ReadLine();
+                DBReader.Close();
             }
             catch (Exception e)
             {

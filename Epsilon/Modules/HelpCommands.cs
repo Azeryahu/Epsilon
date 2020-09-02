@@ -19,7 +19,7 @@ namespace Epsilon.Modules
         {
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
-            if (user.Id == Epsilon.LambertID || user.Roles.Any(x => x.Name == "Administrator"))
+            if (user.Id == Epsilon.MasterID || user.Roles.Any(x => x.Name == "Administrator"))
             {
                 try
                 {
@@ -260,7 +260,7 @@ namespace Epsilon.Modules
             var db = new DatabaseContext();
             try
             {
-                return db.Users.Single(x => x.UserID == user.ToString());
+                return db.Users.Single(x => x.DiscordUserID == user.ToString());
             }
             catch (Exception e)
             {
