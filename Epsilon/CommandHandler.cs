@@ -284,7 +284,7 @@ namespace Epsilon
                     if (gradeNumber == 4)
                     {
                         double rankPointValue = (int)Math.Pow(10, gradeNumber - 4);
-                        if (targetUser.PointBalance >= rankPointValue - 1)
+                        if (targetUser.PromotionPointBalance >= rankPointValue - 1)
                         {
                             InConvo.Add(msg.Author.Id);
                             _ = Task.Run(async () =>
@@ -315,7 +315,7 @@ namespace Epsilon
                                         while (Math.Round(c * (Math.Exp(k * (gradeNumber + 4)) - 1), 0) < daysInFaction)
                                         {
                                             rankPointValue = (int)Math.Pow(10, gradeNumber);
-                                            if (targetUser.PointBalance >= rankPointValue)
+                                            if (targetUser.PromotionPointBalance >= rankPointValue)
                                             {
                                                 gradeNumber++;
                                                 done = true;
@@ -349,7 +349,7 @@ namespace Epsilon
                                         while (Math.Round(c * (Math.Exp(k * (gradeNumber + 4)) - 1), 0) < daysInFaction)
                                         {
                                             gradeNumber++;
-                                            if (targetUser.PointBalance >= rankPointValue)
+                                            if (targetUser.PromotionPointBalance >= rankPointValue)
                                             {
                                                 if (gradeNumber <= 9)
                                                 {
@@ -412,7 +412,7 @@ namespace Epsilon
                             while (Math.Round(c * (Math.Exp(k * (gradeNumber + 4)) - 1), 0) < daysInFaction && !done)
                             {
                                 double rankPointValue = (int)Math.Pow(10, gradeNumber);
-                                if (targetUser.PointBalance >= rankPointValue)
+                                if (targetUser.PromotionPointBalance >= rankPointValue)
                                 {
                                     gradeNumber++;
                                     if (gradeNumber <= 9)

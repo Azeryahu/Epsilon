@@ -30,8 +30,8 @@ namespace Epsilon
                     await channel.SendMessageAsync("I found a user:  " + user.Username + ".");
                     foundUser.ServerJoinDate = user.JoinedAt;
                     foundUser.Rank = "Guest";
-                    foundUser.UserID = user.ToString();
-                    foundUser.Username = user.Username;
+                    foundUser.DiscordUserID = user.ToString();
+                    foundUser.DiscordUsername = user.Username;
                     SaveGuest(foundUser, _db);
                     await channel.SendMessageAsync("I have updated the user.");
                 }
@@ -39,8 +39,8 @@ namespace Epsilon
                 {
                     newMember.ServerJoinDate = user.JoinedAt;
                     newMember.DiscordId = user.Id;
-                    newMember.UserID = user.ToString();
-                    newMember.Username = user.Username;
+                    newMember.DiscordUserID = user.ToString();
+                    newMember.DiscordUsername = user.Username;
                     newMember.Rank = "Guest";
                     newMember.JoinedFaction = false;
                     _db.Users.Add(newMember);

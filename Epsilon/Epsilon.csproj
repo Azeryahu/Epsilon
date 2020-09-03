@@ -277,6 +277,10 @@
     <Compile Include="Migrations\20191110140527_IndustryUpdate.designer.cs">
       <DependentUpon>20191110140527_IndustryUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\20200903200842_Update0.0.3.cs" />
+    <Compile Include="Migrations\20200903200842_Update0.0.3.designer.cs">
+      <DependentUpon>20200903200842_Update0.0.3.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\DatabaseContextModelSnapshot.cs" />
     <Compile Include="Mission.cs" />
     <Compile Include="MissionXRef.cs" />
