@@ -7,200 +7,43 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using System.IO;
+using Discord;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Epsilon.Modules
 {
     class HelpCommands : InteractiveBase<SocketCommandContext>
     {
-        private List<string> GameNamesList = new List<string>();
-        private string versionNumber = "V 3.0.3";
+        private readonly DatabaseContext db = new DatabaseContext();
+        bool commandResult = false;
+        private string VanillaMinecraftFileLocation = "E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\";
+        private string ModdedMinecraftFileLocation = string.Empty;
         [Command("Help")]
-        public async Task help()
+        public async Task help([Remainder] string commandName = null)
         {
+            commandResult = false;
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
-            if (user.Id == Epsilon.MasterID || user.Roles.Any(x => x.Name == "Administrator"))
+            var askingUser = GetUser(user);
+            var channel = await Context.User.CreateDMChannelAsync();
+            if (commandName == null)
             {
-                try
+                /*List<CommandInfo> commands = _commandService.Commands.ToList();
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                foreach (CommandInfo command in commands)
                 {
-                    var channel = Context.Guild.GetTextChannel(Epsilon.SecureChannelID);
-                    await ReplyAsync("Here is a list of available commands for you (no capitalization required):\n" +
-                        "\"~Get Access(Game Name)\" use ?Game Names for a list of titles we currently have channels for\n" +
-                        "\"~Check Standing(username)\", username is optional\n" +
-                        "\"~Check Warnings(username)\", username is optional\n" +
-                        "\"~Check Attempts(username)\", username is optional\n" +
-                        "\"~Enlist\" - verification required.\n" +
-                        "\"~Join\" - verification required.\n" +
-                        "Here is a list of the other help commands:\n" +
-                        "\"?Command Help(command)\", command not optional\n" +
-                        "\"?About\"\n" +
-                        "\"?Patch Notes\"");
-                    await channel.SendMessageAsync(Context.Message.Author.Mention + ".  Here is a list of available admin commands for you:\n" +
-                        "\"-Update Database\" - to update the database with the current members of the server.\n" +
-                        "\"-Add Standing(int, username)\" - adds the integer amount of standing to username entered in %.\n" +
-                        "\"-Remove (or take) Standing(int, username)\" - opposite of the 'Add Standing' command.\n" +
-                        "\"-Issue Warning(username, reason)\" - issues a warning to the username for the reason provided.\n" +
-                        "\"-Set Standing(int, username)\" - sets the standing of the username entered to the integer entered.  (greater than or equal to -10, or less than or equal to 10)\n" +
-                        "\"-Enable Join(username)\" - allows the username entered to join the faction.\n" +
-                        "Here is a list of basic user commands:\n" +
-                        "\"~Check Standing(username)\" - checks the standing of username provided.  Leave blank to check own standing.\n" +
-                        "\"~Check Warnings(username)\" - checks the amount of warnings of the username provided.  Leave blank to check own warning amount.\n" +
-                        "\"~Check Attempts(username)\" - checks the amount of attempts of the username provided.  Leave blank to check own attempt amount.\n" +
-                        "Here is a list of the other help commands:\n" +
-                        "\"?Command Help(command)\" - provides further details on the specific command provided.\n" +
-                        "\"?About\" - provides information about my programming.\n" +
-                        "\"?Patch Notes\" - provides a list of fixes and updates.");
+                    string embedFieldText = command.Summary ?? "No description available\n";
+                    embedBuilder.AddField(command.Name, embedFieldText);
                 }
-                catch (Exception e)
-                {
-                    await ReplyAsync("I am sorry.  I cannot provide you a list of commands available to you in this unsecure channel.\n" +
-                        e.Message);
-                }
+                await ReplyAsync("Here is a list of commands and their description:  ", false, embedBuilder.Build());
+                commandResult = true;*/
             }
-            else
-            {
-                await ReplyAsync("Here is a list of available commands for you (no capitalization required):\n" +
-                    "\"~Get Access(Game Name)\", full game name\n" +
-                    "\"~Check Standing(username)\", username is optional\n" +
-                    "\"~Check Warnings(username)\", username is optional\n" +
-                    "\"~Check Attempts(username)\", username is optional\n" +
-                    "\"~Join\" - verification required.\n" +
-                    "Here is a list of the other help commands:\n" +
-                    "\"?Command Help(command)\", command not optional\n" +
-                    "\"?About\"\n" +
-                    "\"?Patch Notes\"");
-            }
-            ResetAttempts(user);
-            await SendLogMessage(user, "Help");
-        }
-        [Command("Command Help")]
-        public async Task commandHelp([Remainder] string command)
-        {
-            var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-            if (user.Roles.Any(x => x.Name == "Administrator") || user.Id == 151043323379843073)
-            {
-                if (command.ToUpper() == "Ark".ToUpper() || command.ToUpper() == "Ark: Survival Evolved".ToUpper() || command.ToUpper() == "Ark Survival Evolved".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Ark: Survival Evolved channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Arma".ToUpper() || command.ToUpper() == "Arma3".ToUpper() || command.ToUpper() == "Arma 3".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Arma 3 channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Avorion".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Avorion channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "DCS".ToUpper() || command.ToUpper() == "DCS World".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the DCS World channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Dual Universe".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Dual Universe channels which includes a text for NDA and non-NDA and voice channels for NDA and non-NDA.");
-                }
-                else if (command.ToUpper() == "EVE Online".ToUpper() || command.ToUpper() == "EVE".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the EVE Online channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "No Man's Sky".ToUpper() || command.ToUpper() == "NMS".ToUpper() || command.ToUpper() == "No Mans Sky".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the No Man's Sky channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Space Engineers".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Space Engineers channels with include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Warhammer 40K".ToUpper() || command.ToUpper() == "Warhammer".ToUpper())
-                {
-                    await ReplyAsync("This command provieds access to the Warhammer 40K channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Check Standing".ToUpper())
-                {
-                    await ReplyAsync("This command has an optional field where you can type the username or mention the person of whom you wnat to know their standing.  " +
-                        "If you leave this field blank, this command will return your own standing with The Raiders of the Lost Sector.");
-                }
-                else if (command.ToUpper() == "Set Standing".ToUpper())
-                {
-                    await ReplyAsync("This command takes two arguments:  float of the new standing, [Remainder] user to which standings will affect.");
-                }
-            }
-            else
-            {
-                if (command.ToUpper() == "Ark".ToUpper() || command.ToUpper() == "Ark: Survival Evolved".ToUpper() || command.ToUpper() == "Ark Survival Evolved".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Ark: Survival Evolved channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Arma".ToUpper() || command.ToUpper() == "Arma3".ToUpper() || command.ToUpper() == "Arma 3".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Arma 3 channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Avorion".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Avorion channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "DCS".ToUpper() || command.ToUpper() == "DCS World".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the DCS World channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Dual Universe".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Dual Universe channels which includes a text for NDA and non-NDA and voice channels for NDA and non-NDA.");
-                }
-                else if (command.ToUpper() == "EVE Online".ToUpper() || command.ToUpper() == "EVE".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the EVE Online channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "No Man's Sky".ToUpper() || command.ToUpper() == "NMS".ToUpper() || command.ToUpper() == "No Mans Sky".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the No Man's Sky channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Space Engineers".ToUpper())
-                {
-                    await ReplyAsync("This command provides access to the Space Engineers channels with include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Warhammer 40K".ToUpper() || command.ToUpper() == "Warhammer".ToUpper())
-                {
-                    await ReplyAsync("This command provieds access to the Warhammer 40K channels which include a text and voice channel.");
-                }
-                else if (command.ToUpper() == "Check Standing".ToUpper())
-                {
-                    await ReplyAsync("This command has an optional field where you can type the username or mention the person of whom you wnat to know their standing.  " +
-                        "If you leave this field blank, this command will return your own standing with The Raiders of the Lost Sector.");
-                }
-            }
-            ResetAttempts(user);
-            await SendLogMessage(user, "Command Help");
-        }
-        [Command("About")]
-        public async Task about()
-        {
-            var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-            await ReplyAsync("Hello, my name is Epsilon.  The Raiders of the Lost Sector was founded in New Eden years ago in the EVE universe.  " +
-                "With new advancements in technologies, operations were moved from this universe and spread into others.  With this rapid growth " +
-                "and expansion, it left the home colonies in New Eden desolate and barren and thus they died off.  The faction is still expanding into " +
-                "other universes and will most likely continue to spread. " +
-                "\n\nMy current version is " + versionNumber + ".");
-            ResetAttempts(user);
-            await SendLogMessage(user, "About");
-        }
-        [Command("Patch Notes")]
-        public async Task patchNotes()
-        {
-            var user = Context.User as SocketGuildUser;
-            if (user == null) return;
-            await ReplyAsync("Here is a list of bug fixes and features in " + versionNumber + ":\n" +
-                "```" +
-                "Fixed:  Many command issues." +
-                "Added:  More commands");
-            ResetAttempts(user);
-            await SendLogMessage(user, "Patch Notes");
+            await SendLogMessage(user, "Help", commandResult);
         }
         [Command("Info")]
         public async Task info([Remainder] SocketGuildUser userId = null)
         {
+            commandResult = false;
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
             if (userId == null)
@@ -210,31 +53,575 @@ namespace Epsilon.Modules
                     "You have a standing of " + asking.PersonalStanding + " with The Raiders of the Lost Sector.\n" +
                     "You have " + asking.NumberOfWarnings + " number of warnings against you.\n" +
                     "You have tried " + asking.NumberOfAttempts + " without a successful command.\n");
+                commandResult = true;
             }
             else
             {
 
             }
             ResetAttempts(user);
-            await SendLogMessage(user, "Info");
+            await SendLogMessage(user, "Info", commandResult);
         }
-        [Command("Game Names")]
-        public async Task gameNames()
+        [Command("Time")]
+        public async Task time(string time = null)
         {
+            commandResult = false;
             var user = Context.User as SocketGuildUser;
             if (user == null) return;
-            GetGameList();
-            string gameNames = "";
-            gameNames = string.Join(", ", GameNamesList);
-            await ReplyAsync("Here is a list of available titles we currently have channels for on this server\n" +
-                "" + gameNames);
+            if (time != null)
+            {
+                try
+                {
+
+                    await ReplyAsync("The time entered is:  UTC.");
+                    commandResult = true;
+                }
+                catch (Exception e)
+                {
+                    await ReplyAsync("Unable to complete command \"Time\" properly." + e.Message);
+                }
+            }
+            else
+            {
+                await ReplyAsync("The current time on deck is:  " + DateTimeOffset.UtcNow.TimeOfDay + " UTC");
+                commandResult = true;
+            }
             ResetAttempts(user);
-            await SendLogMessage(user, "Game Names");
+            await SendLogMessage(user, "Time", commandResult);
         }
-        private async Task SendLogMessage(SocketGuildUser userID, string commandName)
+        [Command("Flight Time")]
+        [Alias("FT")]
+        public async Task flightTime(float distance, string sRate, string distanceMeasurement = null)
         {
-            var channel = Context.Guild.GetTextChannel(Epsilon.LogChannelID);
-            await channel.SendMessageAsync("```" + userID.ToString() + " used the command " + commandName + " at " + DateTimeOffset.UtcNow + " UTC. ```");
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+            float time = 0;
+            float.TryParse(sRate, out float rate);
+            if (rate > 30000)
+            {
+                await ReplyAsync("The maximum rate you can fly is 30,000 km/h.  I have set your speed to this.");
+                rate = 30000;
+            }
+            if (sRate.Equals("max", StringComparison.OrdinalIgnoreCase))
+            {
+                rate = 30000;
+                if (distance > 0 && (distanceMeasurement == null || distanceMeasurement.Equals("SU", StringComparison.OrdinalIgnoreCase)))
+                {
+                    distance = distance * 200;
+                    time = distance / rate; ;
+                    if (time < 1)
+                    {
+                        double minutes = Math.Floor(time * 60);
+                        double seconds = Math.Round((time - (minutes / 60)) * 3600);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    else
+                    {
+                        double hours = Math.Floor(time);
+                        double minutes = Math.Floor((time - hours) * 60);
+                        double seconds = Math.Round(((time - hours) * 60 - Math.Floor(minutes)) * 60);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        while (minutes >= 60)
+                        {
+                            hours++;
+                            minutes = minutes - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    commandResult = true;
+                }
+                else if (distance > 0 && distanceMeasurement.Equals("KM", StringComparison.OrdinalIgnoreCase))
+                {
+                    time = distance / rate;
+                    if (time < 1)
+                    {
+                        double minutes = Math.Floor(time * 60);
+                        double seconds = Math.Round((time - (minutes / 60)) * 3600);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    else
+                    {
+                        double hours = Math.Floor(time);
+                        double minutes = Math.Floor((time - hours) * 60);
+                        double seconds = Math.Round(((time - hours) * 60 - Math.Floor(minutes)) * 60);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        while (minutes >= 60)
+                        {
+                            hours++;
+                            minutes = minutes - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    commandResult = true;
+                }
+                else if (distance > 0)
+                {
+                    await ReplyAsync("The distance format was incorrect.");
+                }
+                else
+                {
+                    await ReplyAsync("The distance entered must be a positive number.");
+                }
+            }
+            else if (rate > 0)
+            {
+                if (distance > 0 && distanceMeasurement == null)
+                {
+                    distance = distance * 200;
+                    time = distance / rate;
+                    if (time < 1)
+                    {
+                        double minutes = Math.Floor(time * 60);
+                        double seconds = Math.Round((time - (minutes / 60)) * 3600);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    else
+                    {
+                        double hours = Math.Floor(time);
+                        double minutes = Math.Floor((time - hours) * 60);
+                        double seconds = Math.Round(((time - hours) * 60 - Math.Floor(minutes)) * 60);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        while (minutes >= 60)
+                        {
+                            hours++;
+                            minutes = minutes - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    commandResult = true;
+                }
+                else if (distance > 0 && distanceMeasurement.Equals("KM", StringComparison.OrdinalIgnoreCase))
+                {
+                    time = distance / rate;
+                    if (time < 1)
+                    {
+                        double minutes = Math.Floor(time * 60);
+                        double seconds = Math.Round((time - (minutes / 60)) * 3600);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    else
+                    {
+                        double hours = Math.Floor(time);
+                        double minutes = Math.Floor((time - hours) * 60);
+                        double seconds = Math.Round(((time - hours) * 60 - Math.Floor(minutes)) * 60);
+                        while (seconds >= 60)
+                        {
+                            minutes++;
+                            seconds = seconds - 60;
+                        }
+                        while (minutes >= 60)
+                        {
+                            hours++;
+                            minutes = minutes - 60;
+                        }
+                        await ReplyAsync("You will arrive in aproximately " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.  Fly safe!");
+                    }
+                    commandResult = true;
+                }
+                else if (distance > 0)
+                {
+                    await ReplyAsync("The distance format was incorrect.");
+                }
+                else
+                {
+                    await ReplyAsync("The distance entered must be a positive number.");
+                }
+            }
+            else
+            {
+                await ReplyAsync("The speed rate you entered was not valid.  Please try again.");
+            }
+            await SendLogMessage(user, "Flight Time", commandResult);
+        }
+        [Command("Flight Speed")]
+        [Alias("FS")]
+        public async Task flightSpeed(float distance, string sTime, string distanceMeasurement = null)
+        {
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+            double rate = 0;
+            float.TryParse(sTime, out float time);
+            if (distance > 0 && distanceMeasurement == null)
+            {
+                rate = Math.Ceiling((distance * 200) / time);
+                if (rate > 30000)
+                {
+                    await ReplyAsync("You will not be able to make that distance at the current max rate of flight in game.");
+                }
+                else if (rate < 1)
+                {
+                    await ReplyAsync("You cannot go slow enough and would be better if you waited a bit longer before departing your current location.");
+                }
+                else
+                {
+                    await ReplyAsync("You will need to travel at an average rate of:  " + rate + " kph.");
+                }
+            }
+            else if (distance > 0 && distanceMeasurement.Equals("km", StringComparison.OrdinalIgnoreCase))
+            {
+                rate = distance / time;
+                if (rate > 30000)
+                {
+                    await ReplyAsync("You will not be able to make that distance at the current max rate of flight in game.");
+                }
+                else if (rate < 1)
+                {
+                    await ReplyAsync("You cannot go slow enough and would be better if you waited a bit longer before departing your current location.");
+                }
+                else
+                {
+                    await ReplyAsync("You will need to travel at an average rate of:  " + rate + " kph.");
+                }
+            }
+            commandResult = true;
+            await SendLogMessage(user, "Flight Speed", commandResult);
+        }
+        [Command("Warp")]
+        public async Task warp(float distance, float mass, string massValue = null)
+        {
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+            if (distance <= 500 && distance > 0)
+            {
+                if (massValue == null)
+                {
+                    var result = distance * mass * 0.000306659;
+                    result = Math.Ceiling(result);
+                    await ReplyAsync("You will need " + (int)result + " warp cells to traverse that distance.");
+                }
+                else if (massValue.Equals("kg", StringComparison.OrdinalIgnoreCase))
+                {
+                    mass = mass / 1000;
+                    var result = distance * mass * 0.000306659;
+                    result = Math.Ceiling(result);
+                    await ReplyAsync("You will need " + (int)result + " warp cells to traverse that distance.");
+                }
+            }
+            else
+            {
+                await ReplyAsync("You've entered an invalid distance.  Please try again.");
+            }
+            commandResult = true;
+            await SendLogMessage(user, "DU Status", commandResult);
+        }
+        [Command("Break Distance", RunMode = RunMode.Async)]
+        [Alias("BD")]
+        public async Task breakDistance(int velocity, string mass, string breakingForce)
+        {
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+            double breakingDistance = 0;
+            float sMass = 0;
+            int bForce = 0;
+            int mCount = mass.Count() - 1;
+            int bCount = breakingForce.Count() - 1;
+            string massValueString = string.Empty;
+            string forceValueString = string.Empty;
+            float velocity2 = velocity * 1000 / 3600;
+            if (mass[mCount].Equals('t') || mass[mCount].Equals('T'))
+            {
+                mCount = mass.Count() - 1;
+                int x = 0;
+                while (x < mCount)
+                {
+                    massValueString += mass[x];
+                    x++;
+                }
+                sMass = float.Parse(massValueString);
+                sMass = sMass * 1000;
+            }
+            else if (mass[mCount].Equals('g') || mass[mCount].Equals('G'))
+            {
+                mCount = mass.Count() - 2;
+                int x = 0;
+                while (x < mCount)
+                {
+                    massValueString += mass[x];
+                    x++;
+                }
+                sMass = float.Parse(massValueString);
+            }
+            else
+            {
+                try
+                {
+                    sMass = float.Parse(massValueString);
+                }
+                catch (Exception)
+                {
+                    await ReplyAsync("Your mass was not entered correctly.  You will need to try again.");
+                }
+            }
+            if (breakingForce[bCount - 1].Equals('k') || breakingForce[bCount - 1].Equals('K'))
+            {
+                bCount = breakingForce.Count() - 2;
+                int x = 0;
+                while (x < bCount)
+                {
+                    forceValueString += breakingForce[x];
+                    x++;
+                }
+                bForce = int.Parse(forceValueString);
+                bForce = bForce * 1000;
+            }
+            else if (breakingForce[bCount].Equals('N'))
+            {
+                bCount = breakingForce.Count() - 1;
+                int x = 0;
+                while (x < bCount)
+                {
+                    forceValueString += breakingForce[x];
+                    x++;
+                }
+                bForce = int.Parse(forceValueString);
+            }
+            else
+            {
+                bForce = int.Parse(forceValueString);
+            }
+            float maxVelocity2 = 30000 * 1000 / 3600;
+            breakingDistance = sMass * Math.Pow(maxVelocity2, 2) / bForce * (1 - Math.Sqrt(1 - Math.Pow(velocity2, 2) / Math.Pow(maxVelocity2, 2)));
+            await ReplyAsync("Would you like to round for safety?");
+            var response = await NextMessageAsync(true, true, Epsilon.WaitTime);
+            if (response != null && response.Content.Equals("yes", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("y",StringComparison.OrdinalIgnoreCase))
+            {
+                if (breakingDistance > 200000)
+                {
+                    breakingDistance = Math.Ceiling(breakingDistance / 200000);
+                    await ReplyAsync("You will need to start slowing down at a distance of " + breakingDistance + "su from your destination.");
+                }
+                else if (breakingDistance > 1000)
+                {
+                    breakingDistance = Math.Ceiling(breakingDistance / 1000);
+                    await ReplyAsync("You will need to start slowing down at a distance of " + breakingDistance + "km from your destination.");
+                }
+            }
+            else
+            {
+                if (breakingDistance > 200000)
+                {
+                    breakingDistance = breakingDistance / 200000;
+                    await ReplyAsync("You will need to start slowing down at a distance of " + breakingDistance + "su from your destination.");
+                }
+                else if (breakingDistance > 1000)
+                {
+                    breakingDistance = breakingDistance / 1000;
+                    await ReplyAsync("You will need to start slowing down at a distance of " + breakingDistance + "km from your destination.");
+                }
+            }
+            commandResult = true;
+            await SendLogMessage(user, "Break Distance", commandResult);
+        }
+        //Minecraft Commands
+        [Command("Minecraft Locations")]
+        public async Task MinecraftLocation()
+        {
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+            var locationsList = db.MCLocations.ToList();
+            string locationsOutputList = string.Empty;
+            if (db.MCLocations.Any(x => x.Looter.Equals(0)))
+            {
+                foreach (var location in locationsList)
+                {
+                    if (location.Looter.Equals(0))
+                    {
+                        locationsOutputList += location.ThingFound + ", x=" + location.XCoordinate + ", z=" + 
+                            location.ZCoordinate + ", y=" + location.YCoordinate + "\n";
+                    }
+                }
+                var channel = Context.Guild.GetTextChannel(Epsilon.ConfigFile.BotSpamChannelID);
+                await channel.SendMessageAsync(locationsOutputList);
+            }
+            commandResult = true;
+            await SendLogMessage(user, "Minecraft Locations", commandResult);
+        }
+        [Command("Recipe", RunMode = RunMode.Async)]
+        public async Task MinecraftRecipe([Remainder] string recipeName)
+        {
+            commandResult = false;
+            var user = Context.User as SocketGuildUser;
+            if (user.Equals(null)) return;
+
+            var blocks = GoogleSheets.MinecraftBlocks();
+            if (blocks.Any(x => x.Equals(recipeName, StringComparison.OrdinalIgnoreCase)))
+            {
+                Console.WriteLine("Block Found");
+            }
+            if (!recipeName.Equals(null))
+            {
+                var channel = Context.Guild.GetTextChannel(Epsilon.ConfigFile.BotSpamChannelID);
+                if (recipeName.Equals("Planks", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendMessageAsync("There are multiple recipes for \"Planks\", \n\nAcacia\nBirch\nDark Oak\nJungle\nOak\nSpruce\n\nwhat logs are you starting with?");
+                    var response = await NextMessageAsync(true, true, Epsilon.WaitTime);
+                    if (!response.Equals(null))
+                    {
+                        if (response.Content.Equals("Acacia", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Acacia Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Acacia Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync(VanillaMinecraftFileLocation + "AcaciaPlanks1.png",
+                                "This is the recipe for \"Acacia Planks\".");
+                            await channel.SendFileAsync(VanillaMinecraftFileLocation + "AcaciaPlanks2.png",
+                                "This is the alternate recipe for \"Acacia Planks\".");
+                        }
+                        if (response.Content.Equals("Birch", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Birch Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Birch Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync(VanillaMinecraftFileLocation + "BirchPlanks1.png",
+                                "This is the recipe for \"Birch Planks\".");
+                            await channel.SendFileAsync(VanillaMinecraftFileLocation + "BirchPlanks2.png",
+                                "This is the alternate recipe for \"Birch Planks\".");
+                        }
+                        else if (response.Content.Equals("Dark Oak", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Dark Oak Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Dark Oak Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\DarkOakPlanks1.png",
+                                "This is the recipe for \"Dark Oak Planks\".");
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\DarkOakPlanks2.png",
+                                "This is the alternate recipe for \"Dark Oak Planks\".");
+                        }
+                        else if (response.Content.Equals("Jungle", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Jungle Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Jungle Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\JunglePlanks1.png",
+                                "This is the recipe for \"Jungle Planks\".");
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\JunglePlanks2.png",
+                                "This is the alternate recipe for \"Jungle Planks\".");
+                        }
+                        else if (response.Content.Equals("Oak", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Oak Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Oak Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\OakPlanks1.png",
+                                "This is the recipe for \"Oak Planks\".");
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\OakPlanks2.png",
+                                "This is the alternate recipe for \"Oak Planks\".");
+                        }
+                        else if (response.Content.Equals("Spruce", StringComparison.OrdinalIgnoreCase) || response.Content.Equals("Spruce Logs", StringComparison.OrdinalIgnoreCase)
+                            || response.Content.Equals("Spruce Log", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\SprucePlanks1.png",
+                                "This is the recipe for \"Spruce Planks\".");
+                            await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\SprucePlanks2.png",
+                                "This is the alternate recipe for \"Spruce Planks\".");
+                        }
+                    }
+                }
+                else if (recipeName.Equals("Acacia Planks", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\AcaciaPlanks1.png",
+                        "This is the recipe for \"Acacia Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\AcaciaPlanks2.png",
+                        "This is the alternate recipe for \"Acacia Planks\".");
+                }
+                else if (recipeName.Equals("Birch Planks", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\BirchPlanks1.png",
+                        "This is the recipe for \"Birch Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\BirchPlanks2.png",
+                        "This is the alternate recipe for \"Birch Planks\".");
+                }
+                else if (recipeName.Equals("Dark Oak Planks", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\DarkOakPlanks1.png",
+                        "This is the recipe for \"Dark Oak Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\DarkOakPlanks2.png",
+                        "This is the alternate recipe for \"Dark Oak Planks\".");
+                }
+                else if (recipeName.Equals("Jungle Planks", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\JunglePlanks1.png",
+                        "This is the recipe for \"Jungle Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\JunglePlanks2.png",
+                        "This is the alternate recipe for \"Jungle Planks\".");
+                }
+                else if (recipeName.Equals("Oak Planks",StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\OakPlanks1.png",
+                        "This is the recipe for \"Oak Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\OakPlanks2.png",
+                        "This is the alternate recipe for \"Oak Planks\".");
+                }
+                else if (recipeName.Equals("Spruce Planks",StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\SprucePlanks1.png",
+                        "This is the recipe for \"Spruce Planks\".");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\SprucePlanks2.png",
+                        "This is the alternate recipe for \"Spruce Planks\".");
+                }
+                else if (recipeName.Equals("Cheeseburger", StringComparison.OrdinalIgnoreCase))
+                {
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftSimpleFarmingRecipes\\MCSFCheeseBurger1.png",
+                        "This is a modded recipe and the primary recipe for a cheeseburger is:");
+                    await channel.SendFileAsync("E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftSimpleFarmingRecipes\\MCSFCheeseBurger2.png",
+                        "The the alternate recipe is:");
+                }
+            commandResult = true;
+            }
+            else
+            {
+                await ReplyAsync("You did not provide a recipe name. A recipe name is needed in order to look up the coorisponding recipe.");
+            }
+            await SendLogMessage(user, "Minecraft Recipe", commandResult);
+        }
+        //Methods
+        private async Task SendLogMessage(SocketGuildUser userID, string commandName, bool commandResult)
+        {
+            var resultString = string.Empty;
+            var channel = Context.Guild.GetTextChannel(Epsilon.ConfigFile.BotLogChannelID);
+            if (commandResult)
+            {
+                resultString = "successfully";
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync("```" + userID.ToString() + " " + resultString + " used the command " + commandName + " at " + DateTimeOffset.UtcNow + " UTC. ```");
+                }
+            }
+            else if (!commandResult)
+            {
+                resultString = "unsuccessfully";
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync("```" + userID.ToString() + " " + resultString + " used the command " + commandName + " at " + DateTimeOffset.UtcNow + " UTC. ```");
+                }
+            }
         }
         private void ResetAttempts(SocketGuildUser user)
         {
@@ -268,21 +655,16 @@ namespace Epsilon.Modules
                 return null;
             }
         }
-        private void GetGameList()
+        private MCLocation GetLocations(int id)
         {
             try
             {
-                StreamReader gameNameReader = new StreamReader("GameList.txt");
-                while (!gameNameReader.EndOfStream)
-                {
-                    string gameName = gameNameReader.ReadLine();
-                    GameNamesList.Add(gameName);
-                }
-                gameNameReader.Close();
+                return db.MCLocations.Single(x => x.ID.Equals(id) && x.Looter.Equals(0));
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to get list of games. " + e.Message);
+                Console.WriteLine("The database failed to return a location from the database. " + e.Message);
+                return null;
             }
         }
     }

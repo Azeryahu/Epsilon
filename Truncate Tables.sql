@@ -1,0 +1,12 @@
+﻿truncate table dbo.Bounties
+truncate table dbo.Crews
+truncate table dbo.Groups
+truncate table dbo.Indy
+truncate table dbo.Jobs
+truncate table dbo.Missions
+truncate table dbo.MissionXRefs
+truncate table dbo.Ops
+truncate table dbo.OpsXRefs
+truncate table dbo.Organizations
+truncate table dbo.Teams
+truncate table dbo.Users

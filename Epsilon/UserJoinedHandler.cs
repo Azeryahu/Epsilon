@@ -20,20 +20,20 @@ namespace Epsilon
             return Task.Run(async () =>
             {
                 var newMember = new User();
-                var adminRole = user.Guild.GetRole(378974754884943882);
-                var channel = user.Guild.GetTextChannel(370226644574666755);
+                var adminRole = user.Guild.GetRole(Epsilon.ConfigFile.AdministratorRoleID);
+                var channel = user.Guild.GetTextChannel(Epsilon.ConfigFile.AnnouncementChannelID);
                 _db = new DatabaseContext();
-                var foundUser = SearchGuest(user);
+                var foundUser = GetUser(user);
                 await channel.SendMessageAsync(adminRole.Mention + $", {user.Username} has joined the server.");
-                if (foundUser != null && foundUser.DiscordId == user.Id)
+                if (foundUser != null && foundUser.DiscordId.Equals(user.Id))
                 {
-                    await channel.SendMessageAsync("I found a user:  " + user.Username + ".");
+                    await channel.SendMessageAsync(user.Username + " was found in the database.");
                     foundUser.ServerJoinDate = user.JoinedAt;
                     foundUser.Rank = "Guest";
                     foundUser.DiscordUserID = user.ToString();
                     foundUser.DiscordUsername = user.Username;
-                    SaveGuest(foundUser, _db);
-                    await channel.SendMessageAsync("I have updated the user.");
+                    SaveUser(foundUser, _db);
+                    await channel.SendMessageAsync("I have updated " + user.Username + ".");
                 }
                 else
                 {
@@ -45,12 +45,19 @@ namespace Epsilon
                     newMember.JoinedFaction = false;
                     _db.Users.Add(newMember);
                     _db.SaveChanges();
+                    await channel.SendMessageAsync(user.Username + " was successfully added as a Guest.");
                 }
-                var role = user.Guild.Roles.Where(x => x.Name.ToUpper() == "Guest".ToUpper());
-                await user.AddRolesAsync(role);
+                var role = user.Guild.Roles.FirstOrDefault(x => x.Id.Equals(Epsilon.ConfigFile.GuestRoleID));
+                await user.AddRoleAsync(role);
+                role = user.Guild.Roles.FirstOrDefault(x => x.Name.Equals("Neutral", StringComparison.OrdinalIgnoreCase));
+                await user.AddRoleAsync(role);
+                await user.Guild.GetTextChannel(Epsilon.ConfigFile.BotSpamChannelID).SendMessageAsync("Welcome " + user.Mention + ".  " +
+                    "If you are interested in joining " + Epsilon.ConfigFile.OrganizationName + " please contact an admin to assist you in getting " +
+                    "authorized to join.");
             });
         }
-        private void SaveGuest(User guest, DatabaseContext db)
+        //Methods
+        private void SaveUser(User guest, DatabaseContext db)
         {
             try
             {
@@ -59,10 +66,10 @@ namespace Epsilon
             }
             catch (Exception e)
             {
-                Console.WriteLine("Guest Failed to retrieve. " + e.Message);
+                Console.WriteLine(guest.DiscordUsername + " failed to retrieve from the database. " + e.Message);
             }
         }
-        private User SearchGuest(SocketGuildUser user)
+        private User GetUser(SocketGuildUser user)
         {
             var db = new DatabaseContext();
             try
@@ -71,7 +78,7 @@ namespace Epsilon
             }
             catch (Exception e)
             {
-                Console.WriteLine("User joined, but was unable to search guest. " + e.Message);
+                Console.WriteLine("User joined, yet I was unable to locate " + user.Username + "." + e.Message);
                 return null;
             }
         }

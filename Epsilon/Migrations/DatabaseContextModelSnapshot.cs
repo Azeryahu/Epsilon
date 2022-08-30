@@ -15,24 +15,97 @@ namespace Epsilon.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("Epsilon.Bounty", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("BonusPayout")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("DateTimeCompleted")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DateTimeCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<float>("Payout")
+                        .HasColumnType("real");
+
+                    b.Property<int>("PointValue")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TargetName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("TimeoutDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Bounties");
+                });
+
+            modelBuilder.Entity("Epsilon.Crew", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("CaptainID")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("CaptainUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CrewName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("CrewStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("DateTimeDisbanded")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DateTimeFormed")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("NumberOfCrew")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Crews");
+                });
 
             modelBuilder.Entity("Epsilon.Industry", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("PartName");
+                    b.Property<string>("PartName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Quantity");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("UserID")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<string>("Username");
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
 
@@ -43,30 +116,47 @@ namespace Epsilon.Migrations
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Coordinates");
+                    b.Property<string>("Coordinates")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("DateCreated");
+                    b.Property<DateTimeOffset?>("DateCreated")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("JobClass");
+                    b.Property<DateTimeOffset?>("EndDateTime")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<decimal>("JobHeadID")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                    b.Property<string>("JobClassification")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("JobHeadUsername");
+                    b.Property<decimal>("JobLeadID")
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<bool>("JobStatus");
+                    b.Property<string>("JobLeadUsername")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("JobType");
+                    b.Property<string>("JobName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NumberOfGroups");
+                    b.Property<bool>("JobStatus")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("StartDate");
+                    b.Property<string>("JobType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TotalNumberOfSlots");
+                    b.Property<int>("NumberOfGroups")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("StartDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TotalNumberOfSlots")
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
 
@@ -77,22 +167,29 @@ namespace Epsilon.Migrations
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<decimal>("GroupLeadID")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<string>("GroupLeadUsername");
+                    b.Property<string>("GroupLeadUsername")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GroupName");
+                    b.Property<string>("GroupName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("GroupStatus");
+                    b.Property<bool>("GroupStatus")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("JobClass");
+                    b.Property<string>("JobClass")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("JobType");
+                    b.Property<string>("JobType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NumberOfTeams");
+                    b.Property<int>("NumberOfTeams")
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
 
@@ -103,90 +200,341 @@ namespace Epsilon.Migrations
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("JobClass");
+                    b.Property<string>("JobClass")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("JobType");
+                    b.Property<string>("JobType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NumbeOfSlots");
+                    b.Property<int>("NumbeOfSlots")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TeamLeadID")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<string>("TeamLeadUsername");
+                    b.Property<string>("TeamLeadUsername")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TeamName");
+                    b.Property<string>("TeamName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("TeamStatus");
+                    b.Property<bool>("TeamStatus")
+                        .HasColumnType("bit");
 
                     b.HasKey("ID");
 
                     b.ToTable("Teams");
                 });
 
+            modelBuilder.Entity("Epsilon.MCLocation", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTimeOffset?>("DateCreated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DateLooted")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Discoverer")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<decimal>("Looter")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("MinecraftID")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThingFound")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("XCoordinate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("YCoordinate")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZCoordinate")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("MCLocations");
+                });
+
+            modelBuilder.Entity("Epsilon.Mission", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Coordinates")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DateFormed")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("EndDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("MissionActiveStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MissionLeadID")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("MissionLeadUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MissionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("MissionStartedStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MissionType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOfMembers")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("StartDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Missions");
+                });
+
+            modelBuilder.Entity("Epsilon.MissionXRef", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("MissionID")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Ready")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("UserID")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Valid")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("MissionXRefs");
+                });
+
+            modelBuilder.Entity("Epsilon.Op", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Coordinates")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DateFormed")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Duration")
+                        .HasColumnType("float");
+
+                    b.Property<DateTimeOffset?>("EndDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("NumberOfMembers")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("OpActiveStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("OpLeadID")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("OpLeadUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OpName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("OpStartedStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OpType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("StartDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Ops");
+                });
+
+            modelBuilder.Entity("Epsilon.OpsXRef", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("OpID")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Ready")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("UserID")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Valid")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("OpsXRefs");
+                });
+
+            modelBuilder.Entity("Epsilon.Order", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("DualUniverseName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("Epsilon.Organization", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("OrganizationName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("Standing")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Organizations");
+                });
+
             modelBuilder.Entity("Epsilon.User", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Branch");
+                    b.Property<string>("Branch")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("CanJoin");
+                    b.Property<bool>("CanJoin")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("CompletedMissions");
+                    b.Property<int>("CompletedMissions")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CrewID");
-
-                    b.Property<string>("CrewName");
-
-                    b.Property<string>("CurrentGroupName");
-
-                    b.Property<string>("CurrentOpName");
-
-                    b.Property<string>("CurrentOpType");
-
-                    b.Property<string>("CurrentTeamName");
-
-                    b.Property<int>("DaysUntilPromotion");
+                    b.Property<int>("CrewID")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("DiscordId")
-                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+                        .HasColumnType("decimal(20,0)");
 
-                    b.Property<string>("DiscordUserID");
+                    b.Property<string>("DiscordUserID")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DiscordUsername");
+                    b.Property<string>("DiscordUsername")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DualUsername");
+                    b.Property<string>("DualUsername")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("FactionJoinDate");
+                    b.Property<bool>("Enlisted")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Grade");
+                    b.Property<DateTimeOffset?>("FactionJoinDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<bool>("JoinedFaction");
+                    b.Property<string>("Grade")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("LastMessageRecieved");
+                    b.Property<bool>("JoinedFaction")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("NumberOfAttempts");
+                    b.Property<DateTimeOffset?>("LastMessageRecieved")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("NumberOfWarnings");
+                    b.Property<int>("NumberOfAttempts")
+                        .HasColumnType("int");
 
-                    b.Property<float>("PersonalStanding");
+                    b.Property<int>("NumberOfWarnings")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("PromotionDate");
+                    b.Property<float>("PersonalStanding")
+                        .HasColumnType("real");
 
-                    b.Property<int>("PromotionPointBalance");
+                    b.Property<DateTimeOffset?>("PromotionDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Rank");
+                    b.Property<int>("PromotionPointBalance")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("ServerJoinDate");
+                    b.Property<string>("Rank")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SteamID");
+                    b.Property<DateTimeOffset?>("ServerJoinDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("SteamUsername");
+                    b.Property<string>("VerificationKey")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("VerificationKey");
+                    b.Property<bool>("Verified")
+                        .HasColumnType("bit");
 
                     b.HasKey("ID");
 

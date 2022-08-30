@@ -10,13 +10,21 @@ namespace Epsilon
     public class DatabaseContext : DbContext
     {
         public DbSet<User> Users { get; set; }
-        public DbSet<Job> Jobs { get; set; }
-        public DbSet<Job.Group> Groups { get; set; }
-        public DbSet<Job.Group.Team> Teams { get; set; }
-        public DbSet<Industry> Indy { get; set; }
+        public DbSet<MCLocation> MCLocations { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\ProjectsV13;Initial Catalog=EpsilonDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+            var databaseString = string.Empty;
+            try
+            {
+                databaseString = Epsilon.ConfigFile.DatabaseString;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Database string failed to parse?" + e.Message);
+            }
+            optionsBuilder.UseSqlServer(databaseString
+                /*"Data Source=(localdb)\\ProjectsV13;Initial Catalog=EpsilonDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"*/
+                );
         }
     }
 }

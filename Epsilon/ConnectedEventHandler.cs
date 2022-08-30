@@ -17,8 +17,7 @@ namespace Epsilon
         {
             return Task.Run(() =>
             {
-                var announceChannel = _client.GetChannel(Epsilon.AnnounceChannelID) as ISocketMessageChannel;
-                announceChannel.SendMessageAsync("Epsilon has connected to the server!");
+                var announceChannel = _client.GetChannel(Epsilon.ConfigFile.AnnouncementChannelID) as ISocketMessageChannel;
                 Console.WriteLine("Epsilon has connected to the server.");
             });
         }
