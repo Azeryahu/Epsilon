@@ -14,7 +14,8 @@ namespace Epsilon.Modules
 {
     class HelpCommands : InteractiveBase<SocketCommandContext>
     {
-        private readonly DatabaseContext db = new DatabaseContext();
+        public static CommandService _commandService;
+        public static DatabaseContext _db;
         bool commandResult = false;
         private string VanillaMinecraftFileLocation = "E:\\Users\\Ryan\\source\\repos\\Epsilon\\Epsilon\\MinecraftRecipes\\MinecraftVanillaRecipes\\";
         private string ModdedMinecraftFileLocation = string.Empty;
@@ -28,7 +29,7 @@ namespace Epsilon.Modules
             var channel = await Context.User.CreateDMChannelAsync();
             if (commandName == null)
             {
-                /*List<CommandInfo> commands = _commandService.Commands.ToList();
+                List<CommandInfo> commands = _commandService.Commands.ToList();
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 foreach (CommandInfo command in commands)
                 {
@@ -36,7 +37,7 @@ namespace Epsilon.Modules
                     embedBuilder.AddField(command.Name, embedFieldText);
                 }
                 await ReplyAsync("Here is a list of commands and their description:  ", false, embedBuilder.Build());
-                commandResult = true;*/
+                commandResult = true;
             }
             await SendLogMessage(user, "Help", commandResult);
         }
@@ -455,9 +456,9 @@ namespace Epsilon.Modules
             commandResult = false;
             var user = Context.User as SocketGuildUser;
             if (user.Equals(null)) return;
-            var locationsList = db.MCLocations.ToList();
+            var locationsList = _db.MCLocations.ToList();
             string locationsOutputList = string.Empty;
-            if (db.MCLocations.Any(x => x.Looter.Equals(0)))
+            if (_db.MCLocations.Any(x => x.Looter.Equals(0)))
             {
                 foreach (var location in locationsList)
                 {
@@ -659,7 +660,7 @@ namespace Epsilon.Modules
         {
             try
             {
-                return db.MCLocations.Single(x => x.ID.Equals(id) && x.Looter.Equals(0));
+                return _db.MCLocations.Single(x => x.ID.Equals(id) && x.Looter.Equals(0));
             }
             catch (Exception e)
             {

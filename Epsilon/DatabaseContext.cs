@@ -22,9 +22,7 @@ namespace Epsilon
             {
                 Console.WriteLine("Database string failed to parse?" + e.Message);
             }
-            optionsBuilder.UseSqlServer(databaseString
-                /*"Data Source=(localdb)\\ProjectsV13;Initial Catalog=EpsilonDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"*/
-                );
+            optionsBuilder.UseSqlServer("Data Source=(localdb)\\ProjectsV13;Initial Catalog=EpsilonDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
         }
     }
 }

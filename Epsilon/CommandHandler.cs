@@ -33,7 +33,7 @@ namespace Epsilon
             _client = client;
             _services = new ServiceCollection()
                 .AddSingleton(_client)
-                .AddSingleton(new InteractiveService((BaseSocketClient)_client, null))
+                .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
             _adminService = new CommandService();
             _adminService.AddModuleAsync(typeof(Modules.AdminCommands), _services);
@@ -52,19 +52,26 @@ namespace Epsilon
             Context = new SocketCommandContext(_client, msg);
             string errText = string.Empty;
             var user = Context.User as SocketGuildUser;
-            try
+            /*try
             {
                 if (!user.IsBot)
                 {
                     var msgUser = GetUser(user, db);
-                    msgUser.LastMessageRecieved = DateTimeOffset.UtcNow;
-                    SaveUser(msgUser, db);
+                    if (user.Equals(null))
+                    {
+
+                    }
+                    else
+                    {
+                        msgUser.LastMessageRecieved = DateTimeOffset.UtcNow;
+                        SaveUser(msgUser, db);
+                    }
                 }
             }
             catch (Exception e )
             {
                 Console.WriteLine("Error in getting user from database. CommandHandler line 56" + e.Message);
-            }
+            }*/
             if (msg.Channel.GetType().FullName.Equals("Discord.WebSocket.SocketTextChannel") && !user.Guild.Name.Equals(Epsilon.ConfigFile.OrganizationName, StringComparison.OrdinalIgnoreCase))
             {
                 Epsilon.ConfigFile.OrganizationName = user.Guild.Name;
@@ -76,7 +83,7 @@ namespace Epsilon
             if (!user.Equals(null) && !user.IsBot)
             {
                 var msgUser = GetUser(user, db);
-                if (msgUser.Equals(null) && ((user.Roles.Any(x => x.Id.Equals(Epsilon.ConfigFile.SeniorOfficerRoleID))) || user.Id.Equals(Epsilon.ConfigFile.BotMasterID)))
+                if (msgUser == null && (user.Roles.Any(x => x.Id.Equals(Epsilon.ConfigFile.SeniorOfficerRoleID))) || user.Id.Equals(Epsilon.ConfigFile.BotMasterID))
                 {
                     var newUser = new User();
                     newUser.ServerJoinDate = user.JoinedAt;
@@ -97,6 +104,7 @@ namespace Epsilon
                     await Context.Guild.GetTextChannel(Epsilon.ConfigFile.BotSpamChannelID).SendMessageAsync("The database was empty.  Populating now with the current members of " +
                         "the server.");
                 }
+                
             }
             /*while (DateTimeOffset.UtcNow.Subtract(Epsilon.LastCheck).Days > 2)
             {
@@ -199,6 +207,10 @@ namespace Epsilon
                         Context.Guild.GetTextChannel(Epsilon.ConfigFile.SecureSpamChannelID).SendMessageAsync(user.Mention + " Something has gone wrong with the Users " +
                             "database.  " + e.Message);
                         Console.WriteLine("I was unable to locate the Guest in the database. " + e.Message);
+                    }
+                    else if (user.Id.Equals(Epsilon.ConfigFile.BotMasterID))
+                    {
+
                     }
                     return null;
                 }

@@ -311,25 +311,9 @@
     <Compile Include="GoogleSheets.cs" />
     <Compile Include="KeyGenerator.cs" />
     <Compile Include="MCLocation.cs" />
-    <Compile Include="Migrations\20200911120804_Created.cs" />
-    <Compile Include="Migrations\20200911120804_Created.designer.cs">
-      <DependentUpon>20200911120804_Created.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20200911141129_Update0.0.1.cs" />
-    <Compile Include="Migrations\20200911141129_Update0.0.1.designer.cs">
-      <DependentUpon>20200911141129_Update0.0.1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20200920201223_Update0.0.2.cs" />
-    <Compile Include="Migrations\20200920201223_Update0.0.2.designer.cs">
-      <DependentUpon>20200920201223_Update0.0.2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20220214233901_MC_Update_0.0.1.cs" />
-    <Compile Include="Migrations\20220214233901_MC_Update_0.0.1.designer.cs">
-      <DependentUpon>20220214233901_MC_Update_0.0.1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\20220215001038_MC_Update_0.0.2.cs" />
-    <Compile Include="Migrations\20220215001038_MC_Update_0.0.2.designer.cs">
-      <DependentUpon>20220215001038_MC_Update_0.0.2.cs</DependentUpon>
+    <Compile Include="Migrations\20220831000452_Created.cs" />
+    <Compile Include="Migrations\20220831000452_Created.designer.cs">
+      <DependentUpon>20220831000452_Created.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\DatabaseContextModelSnapshot.cs" />
     <Compile Include="Modules\HelpCommands.cs" />
@@ -357,8 +341,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.EntityFrameworkCore.Design.3.1.8\build\net461\Microsoft.EntityFrameworkCore.Design.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.EntityFrameworkCore.Design.3.1.8\build\net461\Microsoft.EntityFrameworkCore.Design.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Data.SqlClient.SNI.2.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Data.SqlClient.SNI.2.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.EntityFrameworkCore.Design.3.1.8\build\net461\Microsoft.EntityFrameworkCore.Design.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.EntityFrameworkCore.Design.3.1.8\build\net461\Microsoft.EntityFrameworkCore.Design.props'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Data.SqlClient.SNI.2.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets" Condition="Exists('..\packages\Microsoft.Data.SqlClient.SNI.2.1.0\build\net46\Microsoft.Data.SqlClient.SNI.targets')" />
 </Project>
