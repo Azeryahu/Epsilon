@@ -18,16 +18,17 @@ namespace Epsilon
     public class CommandHandler
     {
         private static readonly string reader = string.Empty;
+        public DatabaseContext _db;
         private DiscordSocketClient _client;
         private CommandService _adminService;
         private CommandService _responsesService;
         private CommandService _helpService;
         private IServiceProvider _services;
-        private InteractiveService _interactiveService;
+        //private InteractiveService _interactiveService;
         private List<ulong> InConvo = new List<ulong>();
         private SocketCommandContext Context = null;
-        double c = 75.409748628491;
-        double k = 0.334918564750126;
+        //double c = 75.409748628491;
+        //double k = 0.334918564750126;
         public CommandHandler(DiscordSocketClient client)
         {
             _client = client;
@@ -47,7 +48,6 @@ namespace Epsilon
         {
             var msg = s as SocketUserMessage;
             var msgChannel = msg.Channel.GetType().FullName;
-            var db = new DatabaseContext();
             if (msg.Equals(null)) return;
             Context = new SocketCommandContext(_client, msg);
             string errText = string.Empty;
@@ -82,7 +82,7 @@ namespace Epsilon
             }
             if (!user.Equals(null) && !user.IsBot)
             {
-                var msgUser = GetUser(user, db);
+                var msgUser = GetUser(user, _db);
                 if (msgUser == null && (user.Roles.Any(x => x.Id.Equals(Epsilon.ConfigFile.SeniorOfficerRoleID))) || user.Id.Equals(Epsilon.ConfigFile.BotMasterID))
                 {
                     var newUser = new User();
@@ -98,9 +98,9 @@ namespace Epsilon
                     newUser.CanJoin = true;
                     newUser.JoinedFaction = true;
                     newUser.Verified = true;
-                    db.Users.Add(newUser);
-                    db.SaveChanges();
-                    msgUser = GetUser(user, db);
+                    _db.Users.Add(newUser);
+                    _db.SaveChanges();
+                    msgUser = GetUser(user, _db);
                     await Context.Guild.GetTextChannel(Epsilon.ConfigFile.BotSpamChannelID).SendMessageAsync("The database was empty.  Populating now with the current members of " +
                         "the server.");
                 }
@@ -112,7 +112,7 @@ namespace Epsilon
             }*/
             if (DateTimeOffset.UtcNow.Subtract(Epsilon.LastCheck).Days >= Epsilon.ConfigFile.HiatusCheckDays)
             {
-                CheckHiatus(db);
+                CheckHiatus(_db);
                 Epsilon.LastCheck = DateTimeOffset.UtcNow;
             }
             CommandService _service = null;

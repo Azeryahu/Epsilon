@@ -164,7 +164,7 @@ namespace Epsilon
             string ApplicationName = "Google Sheets API .NET Quckstart";
             UserCredential credential;
             using (var stream =
-                new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
+                new FileStream("\\client_secret.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = System.Environment.GetFolderPath(
                     System.Environment.SpecialFolder.Personal);
@@ -189,7 +189,6 @@ namespace Epsilon
             var request = service.Spreadsheets.Values.Get(spreadsheetId, range);
             var response = request.Execute();
             var blocks = new List<string>();
-            int column = 2;
             foreach (var block in response.Values)
             {
                 if (block[1].ToString().Equals("true",StringComparison.OrdinalIgnoreCase) || 

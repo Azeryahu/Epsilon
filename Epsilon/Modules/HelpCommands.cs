@@ -632,11 +632,10 @@ namespace Epsilon.Modules
         }
         private void SaveUser(User guest)
         {
-            var db = new DatabaseContext();
             try
             {
-                db.Users.Update(guest);
-                db.SaveChanges();
+                _db.Users.Update(guest);
+                _db.SaveChanges();
             }
             catch (Exception e)
             {
@@ -645,10 +644,9 @@ namespace Epsilon.Modules
         }
         private User GetUser(SocketGuildUser user)
         {
-            var db = new DatabaseContext();
             try
             {
-                return db.Users.Single(x => x.DiscordUserID == user.ToString());
+                return _db.Users.Single(x => x.DiscordUserID == user.ToString());
             }
             catch (Exception e)
             {
